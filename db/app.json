@@ -1,0 +1,19 @@
+{
+    "songsData": [
+        {
+            "id": 1,
+            "title": "Bohemian Rhapsody",
+            "artist": "Queen"
+        },
+        {
+            "id": 2,
+            "title": "Imagine",
+            "artist": "John Lennon"
+        },
+        {
+            "id": 3,
+            "title": "Hotel California",
+            "artist": "Eagles"
+        }
+    ]
+}
