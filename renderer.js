@@ -1,77 +1,111 @@
-class Song {
-    constructor(id, title, artist) {
-        const thisSong = this;
-        thisSong.id = id;
-        thisSong.title = title;
-        thisSong.artist = artist; 
-    }
-
-    getInfoHTML() {
-        const thisSong = this;
-        return `
-            <h3>${thisSong.title}</h3>
-            <p><strong>Artist:</strong> ${thisSong.artist}</p>
-        `;
-    }
+function showStatus(message, type = 'success') {
+  const statusDiv = document.getElementById('status');
+  statusDiv.textContent = message;
+  statusDiv.className = `status ${type}`;
+  statusDiv.style.display = 'block';
+  
+  setTimeout(() => {
+    statusDiv.style.display = 'none';
+  }, 3000);
 }
 
-class SongFactory {
-    create(id, title, artist) {
-        return new Song(id, title, artist);
-    }
-
-    createArrayFromData(songDataArray) {
-        const thisCreateArrayFromData = this; 
-        return songDataArray.map(data => 
-            thisCreateArrayFromData.create(data.id, data.title, data.artist)
-
-        )
-    }
+function formatDuration(seconds) {
+  if (!seconds || seconds === 0) return 'Unknown';
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = Math.floor(seconds % 60);
+  return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
 }
 
-class PlayerInterface {
-    constructor(songsData, songFactory) {
-        const thisPlayerInterface = this;
-        thisPlayerInterface.dropdown = document.getElementById("songDropdown");
-        thisPlayerInterface.info = document.getElementById("songInfo");
-        thisPlayerInterface.songs = songFactory.createArrayFromData(songsData);
-        thisPlayerInterface.populateDropdown(thisPlayerInterface.dropdown, thisPlayerInterface.songs);
-        thisPlayerInterface.addDropdownListener();
-    }
+function displaySongs(songs){
+  const list = document.getElementById('songList');
+  list.innerHTML = '';
 
-    populateDropdown(dropdownElement, songs) {
-        songs.forEach(song => {
-            const option = document.createElement("option");
-            option.value = song.id;
-            option.textContent = song.title;
-            dropdownElement.appendChild(option);
-        });
-    }
-    addDropdownListener() {
-        const thisPlayerInterface = this;
-        thisPlayerInterface.dropdown.addEventListener("change", () => {
-            const selectedId = parseInt(thisPlayerInterface.dropdown.value, 10);
-            const song = thisPlayerInterface.songs.find(song => song.id === selectedId);
-            thisPlayerInterface.info.innerHTML = song ? song.getInfoHTML() : "";
-        });
-    }
+  if (songs.length === 0) {
+    list.innerHTML = '<li>No MP3 files found in the music folder.</li>';
+    return;
+  }
+
+  songs.forEach(song => {
+    const li = document.createElement('li');
+    
+    const songInfo = document.createElement('div');
+    songInfo.className = 'song-info';
+    
+    const title = document.createElement('div');
+    title.className = 'song-title';
+    title.textContent = song.title;
+    
+    const details = document.createElement('div');
+    details.className = 'song-details';
+    details.textContent = `${song.artist} • ${song.album} • ${formatDuration(song.duration)} • ${song.year || 'Unknown Year'}`;
+    
+    songInfo.appendChild(title);
+    songInfo.appendChild(details);
+    
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'delete-btn';
+    deleteBtn.textContent = 'Delete';
+    deleteBtn.onclick = async () => {
+      if (confirm(`Are you sure you want to delete "${song.title}"?`)) {
+        const success = await window.electronAPI.deleteMp3File(song.fileName);
+        if (success) {
+          showStatus(`Deleted "${song.title}" successfully!`);
+          loadAllSongs(); // Refresh the listb
+        } else {
+          showStatus(`Failed to delete "${song.title}"`, 'error');
+        }
+      }
+    };
+    
+    li.appendChild(songInfo);
+    li.appendChild(deleteBtn);
+    list.appendChild(li);
+  });
 }
 
-const songsData = [
-    { id: 1, title: "Song One", artist: "Artist A" },
-    { id: 2, title: "Song Two", artist: "Artist B" },
-    { id: 3, title: "Song Three", artist: "Artist C" }
-];
-
-const app = {
-    init: function() {
-        const thisApp = this;
-        const factory = new SongFactory();
-        const player = new PlayerInterface(songsData, factory);
-    }
+async function loadAllSongs() {
+  try {
+    const songs = await window.electronAPI.loadAllMp3Files();
+    displaySongs(songs);
+    showStatus(`Loaded ${songs.length} songs from music folder`);
+  } catch (error) {
+    console.error('Error loading songs:', error);
+    showStatus('Error loading songs', 'error');
+  }
 }
 
-app.init();
+document.getElementById('min-btn').addEventListener('click', () => {
+  window.electronAPI.minimize();
+});
 
+document.getElementById('max-btn').addEventListener('click', () => {
+  window.electronAPI.maximize();
+});
 
+document.getElementById('close-btn').addEventListener('click', () => {
+  window.electronAPI.close();
+});
 
+document.getElementById('uploadFiles').addEventListener('click', async () => {
+  try {
+    const uploadedFiles = await window.electronAPI.uploadMp3Files();
+    if (uploadedFiles.length > 0) {
+      showStatus(`Uploaded ${uploadedFiles.length} file(s) successfully!`);
+      // Automatically refresh the song list after upload
+      setTimeout(() => {
+        loadAllSongs();
+      }, 500);
+    } else {
+      showStatus('No files were uploaded', 'error');
+    }
+  } catch (error) {
+    console.error('Error uploading files:', error);
+    showStatus('Error uploading files', 'error');
+  }
+});
+
+document.getElementById('loadSongs').addEventListener('click', loadAllSongs);
+
+window.addEventListener('DOMContentLoaded', () => {
+  loadAllSongs();
+});
