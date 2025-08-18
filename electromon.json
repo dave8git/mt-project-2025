@@ -1,0 +1,17 @@
+{
+  "main": "main/main.js",
+  "watch": [
+    "main",
+    "preload",
+    "renderer",
+    "assets"
+  ],
+  "ignore": [
+    "node_modules",
+    "dist",
+    "data"
+  ],
+  "env": {
+    "NODE_ENV": "development"
+  }
+}

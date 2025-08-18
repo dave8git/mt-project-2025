@@ -1,0 +1,20 @@
+[
+  {
+    "filePath": "C:\\Users\\Lenovo\\Desktop\\Kodilla\\mt-project-2025\\assets\\music\\sample2.mp3",
+    "fileName": "sample2.mp3",
+    "title": "sample2",
+    "artist": "Unknown Artist",
+    "album": "Unknown Album",
+    "year": "",
+    "duration": 217.39102040816326
+  },
+  {
+    "filePath": "C:\\Users\\Lenovo\\Desktop\\Kodilla\\mt-project-2025\\assets\\music\\sample4.mp3",
+    "fileName": "sample4.mp3",
+    "title": "sample4",
+    "artist": "Unknown Artist",
+    "album": "Unknown Album",
+    "year": "",
+    "duration": 244.5061224489796
+  }
+]

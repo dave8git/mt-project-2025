@@ -1,3 +1,8 @@
+let currentSongs = []; // loaded songs
+let currentIndex = -1; 
+const audioPlayer = document.getElementById('audioPlayer');
+const nowPlayingDisplay = document.querySelector('.display');
+
 function showStatus(message, type = 'success') {
   const statusDiv = document.getElementById('status');
   statusDiv.textContent = message;
@@ -14,6 +19,48 @@ function formatDuration(seconds) {
   const minutes = Math.floor(seconds / 60);
   const remainingSeconds = Math.floor(seconds % 60);
   return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+}
+
+function playSong(index) {
+  if (index < 0 || index >= currentSongs.length) return;
+  currentIndex = index;
+  const song = currentSongs[index];
+  audioPlayer.src = song.filePath;
+
+  try {
+      audioPlayer.play();
+    nowPlayingDisplay.textContent = `Now Playing: "${song.title} by ${song.artist}`;
+  } catch (err) {
+    console.warn("Playback failed:", err);
+  }
+
+}
+
+function playNext() {
+  if (currentSongs.length === 0) return;
+  let nextIndex = (currentIndex + 1) % currentSongs.length;
+  playSong(nextIndex);
+}
+
+function playPrev() {
+  if (currentSongs.length === 0) return;
+  let prevIndex = (currentIndex - 1 + currentSongs.length) % currentSongs.length;
+  playSong(prevIndex);
+
+}
+
+function togglePlayPause() {
+  if(!audioPlayer.src) {
+    if(currentSongs.length > 0) {
+      playSong(0);
+    }
+    return;
+  }
+  if (audioPlayer.paused) {
+    audioPlayer.play();
+  } else {
+    audioPlayer.pause();
+  }
 }
 
 function displaySongs(songs){
@@ -66,6 +113,7 @@ function displaySongs(songs){
 async function loadAllSongs() {
   try {
     const songs = await window.electronAPI.loadAllMp3Files();
+    currentSongs = songs;
     displaySongs(songs);
     showStatus(`Loaded ${songs.length} songs from music folder`);
   } catch (error) {
@@ -105,6 +153,12 @@ document.getElementById('uploadFiles').addEventListener('click', async () => {
 });
 
 document.getElementById('loadSongs').addEventListener('click', loadAllSongs);
+
+document.querySelectorAll('.controls .btn')[0].addEventListener('click', playPrev);
+document.querySelectorAll('.controls .btn')[1].addEventListener('click', togglePlayPause);
+document.querySelectorAll('.controls .btn')[2].addEventListener('click', playNext);
+
+audioPlayer.addEventListener('ended', playNext);
 
 window.addEventListener('DOMContentLoaded', () => {
   loadAllSongs();
