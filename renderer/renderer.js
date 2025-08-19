@@ -26,7 +26,10 @@ function playSong(index) {
   currentIndex = index;
   const song = currentSongs[index];
   audioPlayer.src = song.filePath;
-
+  audioPlayer.play();
+  updatePlayIcon(true);
+  localStorage.setItem('lastSongIndex', index);
+  localStorage.setItem('lastSongTime', 0);
   try {
       audioPlayer.play();
     nowPlayingDisplay.textContent = `Now Playing: "${song.title} by ${song.artist}`;
@@ -49,18 +52,48 @@ function playPrev() {
 
 }
 
+function savePlaybackState() {
+  if(currentIndex >= 0 && currentIndex < currentSongs.length) {
+    localStorage.setItem('lastSongIndex', currentIndex);
+    localStorage.setItem('lastSongTime', audioPlayer.currentTime);
+  }
+}
+
 function togglePlayPause() {
+  if (currentSongs.length === 0) return;
   if(!audioPlayer.src) {
-    if(currentSongs.length > 0) {
-      playSong(0);
+    if(currentIndex === -1) {
+      const savedIndex = parseInt(localStorage.getItem('lastSongIndex'), 10);
+      const savedTime = parseFloat(localStorage.getItem('lastSongTime'));
+
+      if (!isNaN(savedIndex) && savedIndex >= 0 && savedIndex < currentSongs.length) {
+        currentIndex = savedIndex;
+        playSong(currentIndex);
+        if (!isNaN(savedTime)) {
+          audioPlayer.currentTime = savedTime;
+        }
+      } else {
+        playSong(0);
+      }
     }
+    // if(currentSongs.length > 0) {
+    //   playSong(0);
+    // }
     return;
   }
   if (audioPlayer.paused) {
     audioPlayer.play();
+    updatePlayIcon(true);
   } else {
     audioPlayer.pause();
+    updatePlayIcon(false);
   }
+}
+
+function updatePlayIcon(isPlaying) {
+  playBtn.innerHTML = isPlaying 
+    ? `<svg viewBox="0 0 24 24"><path d="M6 19h4V5H6v14z M14 5v14h4V5h-4z" transform="scale(-1,1) translate(-24,0)" /></svg>`
+    : `<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>`
 }
 
 function displaySongs(songs){
@@ -92,7 +125,8 @@ function displaySongs(songs){
     const deleteBtn = document.createElement('button');
     deleteBtn.className = 'delete-btn';
     deleteBtn.textContent = 'Delete';
-    deleteBtn.onclick = async () => {
+    deleteBtn.onclick = async (e) => {
+      e.stopPropagation();
       if (confirm(`Are you sure you want to delete "${song.title}"?`)) {
         const success = await window.electronAPI.deleteMp3File(song.fileName);
         if (success) {
@@ -117,6 +151,7 @@ async function loadAllSongs() {
     displaySongs(songs);
     showStatus(`Loaded ${songs.length} songs from music folder`);
   } catch (error) {
+
     console.error('Error loading songs:', error);
     showStatus('Error loading songs', 'error');
   }
@@ -137,6 +172,7 @@ document.getElementById('close-btn').addEventListener('click', () => {
 document.getElementById('uploadFiles').addEventListener('click', async () => {
   try {
     const uploadedFiles = await window.electronAPI.uploadMp3Files();
+    console.log('uploadedFiles', uploadedFiles);
     if (uploadedFiles.length > 0) {
       showStatus(`Uploaded ${uploadedFiles.length} file(s) successfully!`);
       // Automatically refresh the song list after upload
@@ -159,6 +195,10 @@ document.querySelectorAll('.controls .btn')[1].addEventListener('click', toggleP
 document.querySelectorAll('.controls .btn')[2].addEventListener('click', playNext);
 
 audioPlayer.addEventListener('ended', playNext);
+
+audioPlayer.addEventListener('play', () => updatePlayIcon(true));
+audioPlayer.addEventListener('pause', () => updatePlayIcon(false));
+audioPlayer.addEventListener('pause', savePlaybackState);
 
 window.addEventListener('DOMContentLoaded', () => {
   loadAllSongs();

@@ -167,6 +167,7 @@ ipcMain.handle('load-all-mp3-files', async () => {
 ipcMain.handle('delete-mp3-file', async (event, fileName) => {
   try {
     const filePath = path.join(MUSIC_FOLDER, fileName);
+
     if (fs.existsSync(filePath)) {
       await fs.promises.unlink(filePath);
       //fs.unlinkSync(filePath);
