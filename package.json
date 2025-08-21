@@ -1,16 +1,46 @@
 {
-  "name": "my-electron-app",
+  "name": "basic-mp3-player",
   "version": "1.0.0",
   "main": "main/main.js",
   "scripts": {
     "start": "electron .",
-    "dev": "electronmon ."
+    "dev": "electronmon .",
+    "clean": "rimraf dist",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder"
   },
   "devDependencies": {
     "electron": "^27.0.0",
-    "electronmon": "^2.0.3"
+    "electron-builder": "^26.0.12",
+    "electronmon": "^2.0.3",
+    "rimraf": "^6.0.1"
   },
   "dependencies": {
     "music-metadata": "^7.14.0"
+  },
+  "build": {
+    "appId": "com.devide.bascimp3player",
+    "productName": "basicMP3player",
+    "directories": {
+      "buildResources": "assets"
+    },
+    "files": [
+      "main/**/*",
+      "renderer/**/*",
+      "preload/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": "nsis"
+    },
+    "mac": {
+      "target": "dmg"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ]
+    }
   }
 }

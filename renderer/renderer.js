@@ -1,3 +1,7 @@
+// Moduły: 1. Lista piosenek 2. Player
+// dodać wzorzec: Fabryka
+// zastąpić delay - nasłuchiwanie na moment kiedy plik jest przekopiowany
+// podzielić na moduły - zgodnie z metodologię commonJS
 let currentSongs = []; // loaded songs
 let currentIndex = -1; 
 const audioPlayer = document.getElementById('audioPlayer');
@@ -94,6 +98,13 @@ function updatePlayIcon(isPlaying) {
   playBtn.innerHTML = isPlaying 
     ? `<svg viewBox="0 0 24 24"><path d="M6 19h4V5H6v14z M14 5v14h4V5h-4z" transform="scale(-1,1) translate(-24,0)" /></svg>`
     : `<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>`
+}
+
+function authorSelector(songs) {
+  const authorDropdown = document.getElementById("authorDropdown");
+  authorDropdown.innerHTML = '';
+  // z tablicy na nazwy autorów --> to na seta, żeby wyciąć duplikaty --> tablica - żeby przejść i stworzyć menu
+
 }
 
 function displaySongs(songs){
@@ -203,3 +214,8 @@ audioPlayer.addEventListener('pause', savePlaybackState);
 window.addEventListener('DOMContentLoaded', () => {
   loadAllSongs();
 });
+
+window.electronAPI.onSongsUpdated((fileName) => {
+  console.log(`Song folder changed: ${fileName}`);
+  loadAllSongs();
+})

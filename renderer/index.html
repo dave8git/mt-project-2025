@@ -3,6 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self';">
     <title>Music Player</title>
     <link rel="stylesheet" href="normalize.css">
     <link rel="stylesheet" href="style.css">
@@ -49,8 +50,12 @@
                     <path d="M6 19V5l8.5 7L6 19zm9.5-7V5l8.5 7-8.5 7z" />
                 </svg>
             </div>
+            <div id="authorDropdown">
+
+            </div>
         </div>
     </div>
+    
     <audio id="audioPlayer"></audio>
     <script src="renderer.js"></script>
 </body>
