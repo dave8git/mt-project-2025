@@ -12,7 +12,7 @@
 <body>
     <div class="radio">
         <div class="title-bar">
-            <span class="title">Simple Player</span>
+            <span class="title">basicMP3Player</span>
             <div class="window-controls">
                 <button id="min-btn">—</button>
                 <button id="max-btn">□</button>
@@ -22,7 +22,6 @@
         <div class="display">
             🎵 Now Playing: "My Song"
         </div>
-        <h1>Music Player</h1>
         <div class="buttons">
             <button id="uploadFiles">Upload MP3 Files</button>
             <button id="loadSongs">Load All Songs</button>
@@ -30,7 +29,7 @@
 
         <div id="status" class="status"></div>
 
-        <ul id="songList"></ul>
+        <ul id="songList" class="songList"></ul>
         <div class="controls">
             <div class="btn">
                 <!-- Prev -->
@@ -51,7 +50,9 @@
                 </svg>
             </div>
             <div id="authorDropdown">
-
+                <select id="authorSelect">
+                    <option value="all">All Authors</option>
+                </select>
             </div>
         </div>
     </div>

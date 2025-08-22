@@ -40,7 +40,6 @@ function playSong(index) {
   } catch (err) {
     console.warn("Playback failed:", err);
   }
-
 }
 
 function playNext() {
@@ -100,13 +99,6 @@ function updatePlayIcon(isPlaying) {
     : `<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>`
 }
 
-function authorSelector(songs) {
-  const authorDropdown = document.getElementById("authorDropdown");
-  authorDropdown.innerHTML = '';
-  // z tablicy na nazwy autorów --> to na seta, żeby wyciąć duplikaty --> tablica - żeby przejść i stworzyć menu
-
-}
-
 function displaySongs(songs){
   const list = document.getElementById('songList');
   list.innerHTML = '';
@@ -116,9 +108,16 @@ function displaySongs(songs){
     return;
   }
 
-  songs.forEach(song => {
+  songs.forEach((song, index) => {
     const li = document.createElement('li');
-    
+    li.addEventListener('click', () => {
+      if(currentIndex === index && !audioPlayer.paused) {
+        audioPlayer.pause();
+        updatePlayIcon(false);
+      } else {
+        playSong(index)
+      }
+    });
     const songInfo = document.createElement('div');
     songInfo.className = 'song-info';
     
@@ -149,24 +148,52 @@ function displaySongs(songs){
       }
     };
     
-    li.appendChild(songInfo);
+    li.appendChild(songInfo).classList.add('songInfo');
     li.appendChild(deleteBtn);
     list.appendChild(li);
   });
 }
 
+const authorSelect = document.getElementById("authorSelect");
+
+let allSongs = [];
+let currentFilter = "all";
+
+function populateAuthorDropdown(songs) {
+    const authors = [...new Set(songs.map(song => song.artist))];
+    authorSelect.innerHTML = `<option value="all">All Authors</option>`;
+    authors.forEach(author => {
+      const option = document.createElement("option");
+      option.value = author;
+      option.textContent = author;
+      authorSelect.appendChild(option);
+    });
+}
+
+function getFilteredSongs() {
+  if (currentFilter === "all") return allSongs;
+  return allSongs.filter(song => song.artist === currentFilter);
+}
+
 async function loadAllSongs() {
   try {
     const songs = await window.electronAPI.loadAllMp3Files();
-    currentSongs = songs;
-    displaySongs(songs);
+    allSongs = songs;
+    populateAuthorDropdown(songs);
+    currentSongs = getFilteredSongs();
+    displaySongs(getFilteredSongs());
     showStatus(`Loaded ${songs.length} songs from music folder`);
   } catch (error) {
-
     console.error('Error loading songs:', error);
     showStatus('Error loading songs', 'error');
   }
 }
+
+authorSelect.addEventListener("change", (e) => {
+  currentFilter = e.target.value;
+  currentSongs = getFilteredSongs();
+  displaySongs(currentSongs);
+});
 
 document.getElementById('min-btn').addEventListener('click', () => {
   window.electronAPI.minimize();
