@@ -226,6 +226,34 @@ document.getElementById('uploadFiles').addEventListener('click', async () => {
   }
 });
 
+const progressContainer = document.getElementById('progressContainer');
+const progress = document.getElementById('progress');
+const currentTimeEl = document.getElementById('currentTime');
+const totalTimeEl = document.getElementById('totalTime');
+
+audioPlayer.addEventListener('loadedmetadata', () => {
+  totalTimeEl.textContent = formatDuration(audioPlayer.duration);
+});
+
+audioPlayer.addEventListener('timeupdate', () => {
+  const { currentTime, duration } = audioPlayer;
+  if (duration) {
+    const progressPercent = (currentTime / duration) * 100;
+    progress.style.width = `${progressPercent}%`;
+    currentTimeEl.textContent = formatDuration(currentTime);
+  }
+});
+
+  progressContainer.addEventListener('click', (e) => {
+    const width = progressContainer.clientWidth;
+    const clickX = e.offsetX;
+    const duration = audioPlayer.duration;
+
+    if (duration) {
+      audioPlayer.currentTime = (clickX / width) * duration;
+    }
+  });
+
 document.getElementById('loadSongs').addEventListener('click', loadAllSongs);
 
 document.querySelectorAll('.controls .btn')[0].addEventListener('click', playPrev);
